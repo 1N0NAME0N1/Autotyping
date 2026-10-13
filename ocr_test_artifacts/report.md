@@ -47,6 +47,12 @@ WER = word-level Levenshtein edits (substitutions + insertions + deletions) / 15
 ## Mixed aggregate
 10 sets; 1,500 source words; 1500 output words; 148 edit errors; WER 9.87%.
 
+## Forced line-wrap sentence checks
+- WRAP-01: PASS — การพิมพ์สัมผัสเป็นทักษะที่ใช้ได้ตลอดชีวิต
+- WRAP-02: PASS — ผมเป็นนักศึกษาที่วิทยาลัยการคอมพิวเตอร์
+- WRAP-03: PASS — เราไปโรงเรียนด้วยกันทุกวัน
+
 ## Files
 - `sets.json`: generated inputs.
 - `results.json`: OCR text and per-set metrics.
+- `sentence_wrap_results.json`: OCR results for the three wrapped sentences.

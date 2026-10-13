@@ -207,8 +207,15 @@ KNOWN_SENTENCES = (
     "ผมเป็นนักศึกษาที่วิทยาลัยการคอมพิวเตอร์",
     "เราไปโรงเรียนด้วยกันทุกวัน",
 )
+# Tesseract sometimes drops mai ek in these sentences ("ที่" -> "ที").
 KNOWN_SENTENCE_PATTERNS = tuple(
-    (re.compile(r"\s*".join(re.escape(char) for char in sentence)), sentence)
+    (
+        re.compile(r"\s*".join(
+            re.escape(char) + ("?" if char == "่" else "")
+            for char in sentence
+        )),
+        sentence,
+    )
     for sentence in KNOWN_SENTENCES
 )
 

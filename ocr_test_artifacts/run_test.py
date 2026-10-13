@@ -41,6 +41,15 @@ def render(words, font):
     return image
 
 
+def render_lines(lines, font):
+    width, margin, line_height = 1980, 40, 64
+    image = Image.new("RGB", (width, margin * 2 + line_height * len(lines)), "white")
+    draw = ImageDraw.Draw(image)
+    for row, line in enumerate(lines):
+        draw.text((margin, margin + row * line_height), line, font=font, fill="black")
+    return image
+
+
 def edit_counts(expected, actual):
     previous = [(j, 0, j) for j in range(len(actual) + 1)]
     for i, left in enumerate(expected, 1):
@@ -101,6 +110,27 @@ def main():
                         "error": error, "output": text})
         print(f"{case['id']} {len(actual)}/150 errors={distance} WER={distance / 150:.1%}",
               flush=True)
+
+    wrap_results = []
+    splits = ("ตลอดชีวิต", "การคอมพิวเตอร์", "ด้วยกัน")
+    for number, (sentence, split_text) in enumerate(
+        zip(auto_typer.KNOWN_SENTENCES, splits), 1
+    ):
+        split_at = sentence.index(split_text)
+        image = render_lines(
+            ["ข้อความก่อนหน้า " + sentence[:split_at],
+             sentence[split_at:] + " ข้อความต่อท้าย"],
+            thai_font,
+        )
+        text = engine.read_image(image, "tha", True, {})
+        phrase_found = sentence in "".join(text.split())
+        wrap_results.append({"id": f"WRAP-{number:02}", "expected": sentence,
+                             "found": phrase_found, "output": text})
+        print(f"WRAP-{number:02} phrase_found={phrase_found}", flush=True)
+
+    (output_dir / "sentence_wrap_results.json").write_text(
+        json.dumps(wrap_results, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     (output_dir / "results.json").write_text(
         json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -121,8 +151,12 @@ def main():
         lines += ["", f"## {kind.title()} aggregate",
                   f"10 sets; 1,500 source words; {sum(r['actual'] for r in group)} output words; "
                   f"{errors} edit errors; WER {errors / 1500:.2%}."]
+    lines += ["", "## Forced line-wrap sentence checks"]
+    for result in wrap_results:
+        lines.append(f"- {result['id']}: {'PASS' if result['found'] else 'FAIL'} — {result['expected']}")
     lines += ["", "## Files", "- `sets.json`: generated inputs.",
-              "- `results.json`: OCR text and per-set metrics."]
+              "- `results.json`: OCR text and per-set metrics.",
+              "- `sentence_wrap_results.json`: OCR results for the three wrapped sentences."]
     (output_dir / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
