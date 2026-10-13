@@ -1236,12 +1236,21 @@ class AutoTyper:
                     0 if random.random() < 0.7 else random.randint(1, 3),
                 )
                 for ex in text[i + 1:i + 1 + extra]:
+                    if self.stop_flag.is_set():
+                        return i
                     self.press(ex)
                     self.pause(base)
-                time.sleep(random.uniform(0.15, 0.4))  # เวลาตอบสนอง
+                    if self.stop_flag.is_set():
+                        return i
+                if self.stop_flag.wait(random.uniform(0.15, 0.4)):
+                    return i
                 for _ in range(extra + 1):
+                    if self.stop_flag.is_set():
+                        return i
                     self.tap(keyboard.Key.backspace)
                     self.pause(base * 0.6)
+                if self.stop_flag.is_set():
+                    return i
                 # ลบตัวผิดออกแล้ว พิมพ์ตัวที่ถูกต้อง (ตัวที่พิมพ์เกินจะถูกพิมพ์ใหม่ตามปกติ)
                 self.press(ch)
                 self.pause(base)
