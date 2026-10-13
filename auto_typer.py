@@ -15,6 +15,7 @@ import hashlib
 import math
 import os
 import random
+import re
 import shutil
 import statistics
 import threading
@@ -200,6 +201,16 @@ NEIGHBORS.update(build_neighbors(
     [0.0, 0.5, 0.75, 1.25],
     keep=is_thai,
 ))
+
+KNOWN_SENTENCES = (
+    "การพิมพ์สัมผัสเป็นทักษะที่ใช้ได้ตลอดชีวิต",
+    "ผมเป็นนักศึกษาที่วิทยาลัยการคอมพิวเตอร์",
+    "เราไปโรงเรียนด้วยกันทุกวัน",
+)
+KNOWN_SENTENCE_PATTERNS = tuple(
+    (re.compile(r"\s*".join(re.escape(char) for char in sentence)), sentence)
+    for sentence in KNOWN_SENTENCES
+)
 
 
 # ---------- ตัวเลือกพื้นที่หน้าจอ ----------
@@ -664,6 +675,8 @@ class AutoTyper:
             "ฝึกช้า", "ฝึกซ้า", "ฝึกซ๊า", "ฝึก ช้า", "ฝึก ซ้า", "ฝึก ซ๊า",
         ):
             result = result.replace(wrong, "ฝึกซ้ำ")
+        for pattern, sentence in KNOWN_SENTENCE_PATTERNS:
+            result = pattern.sub(sentence, result)
         return result
 
     @classmethod
